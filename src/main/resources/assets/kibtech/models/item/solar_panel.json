@@ -1,6 +1,3 @@
 {
-    "parent": "minecraft:item/generated",
-    "textures": {
-        "layer0": "kibtech:item/solar_panel"
-    }
+    "parent": "kibtech:block/solar_panel"
 }

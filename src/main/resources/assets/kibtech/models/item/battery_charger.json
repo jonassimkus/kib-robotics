@@ -1,6 +1,3 @@
 {
-    "parent": "minecraft:item/generated",
-    "textures": {
-        "layer0": "kibtech:item/battery_charger"
-    }
+    "parent": "kibtech:block/battery_charger"
 }

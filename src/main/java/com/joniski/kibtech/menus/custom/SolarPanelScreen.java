@@ -40,6 +40,7 @@ public class SolarPanelScreen extends AbstractContainerScreen<SolarPanelMenu>{
 
 
         guiGraphics.drawString(minecraft.font, menu.blockEntity.getEnergyStorage().getEnergyStored() + "/" + menu.blockEntity.getEnergyStorage().getMaxEnergyStored() + " KE", 8, 16, -1);
+        guiGraphics.drawString(minecraft.font, menu.blockEntity.generatedThisTick + ".0 KE/t", 8, 16 + minecraft.font.lineHeight + 2, -1);
     
     }
 

@@ -1,6 +1,10 @@
 package com.joniski.kibtech.block.custom;
 
+import java.util.List;
+
 import com.joniski.kibtech.block.ModBlockEntity;
+import com.joniski.kibtech.component.ModDataComponents;
+import com.joniski.kibtech.component.PowerRecord;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
@@ -11,7 +15,9 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -28,7 +34,7 @@ public class SolarPanel extends BaseEntityBlock{
 
     public static final MapCodec<SolarPanel> CODEC = simpleCodec(SolarPanel::new);
 
-    public static final VoxelShape shape = box(0,0,0,16,4,16);
+    public static final VoxelShape shape = box(3,0,3,13,9,13);
 
     public SolarPanel(Properties properties) {
         super(properties);
@@ -65,8 +71,8 @@ public class SolarPanel extends BaseEntityBlock{
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        // TODO ADD BREAKING
-        return;
+        level.updateNeighbourForOutputSignal(pos, this);
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
@@ -83,6 +89,16 @@ public class SolarPanel extends BaseEntityBlock{
 
 
         return ItemInteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents,
+            TooltipFlag tooltipFlag) {
+
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+
+        tooltipComponents.add(Component.literal("Generates power with sunlight"));
+        tooltipComponents.add(Component.literal("§7" + 11 + ".0 §dKE/t"));
     }
 
     @Override

@@ -37,7 +37,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
 
     // Battery Slot
-    public final ItemStackHandler inventory = new ItemStackHandler(1){
+    public final ItemStackHandler inventory = new ItemStackHandler(3){
         @Override
         protected int getStackLimit(int slot, ItemStack stack) {
             return 1;
@@ -53,12 +53,12 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
         };
     };
 
-
+    private int chargeRate = 15;
     private EnergyStorage energyStorage;
 
     public BatteryChargerEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntity.BATTERY_CHARGER_BE.get(), pos, blockState);
-        energyStorage = new EnergyStorage(1000);
+        energyStorage = new EnergyStorage(2310);
     }
 
 
@@ -95,18 +95,31 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
     }
 
     public void tick(Level level, BlockPos pos, BlockState state){
-        if (!inventory.getStackInSlot(0).isEmpty()){
-            if ((inventory.getStackInSlot(0).getItem() instanceof WeakBatteryItem)){
-                WeakBatteryItem b = (WeakBatteryItem) inventory.getStackInSlot(0).getItem();
-             
-                if (!b.isFull(inventory.getStackInSlot(0))){
-                    int energyStolen = energyStorage.extractEnergy(3, true);
-                    int energySent = b.charge(inventory.getStackInSlot(0), energyStolen);
-                    energyStorage.extractEnergy(energySent, false);
-                
+        int amountOfBattery = 0;
+
+        for (int i = 0; i < inventory.getSlots(); ++i){
+            if (inventory.getStackInSlot(i).getItem() instanceof WeakBatteryItem battery){
+                if (!battery.isFull(inventory.getStackInSlot(i))){
+                    amountOfBattery+=1;
                 }
             }
         }
+
+        if (amountOfBattery != 0){
+            int energyStolen = energyStorage.extractEnergy(chargeRate, true);
+            int energySplit = (int)(energyStolen / amountOfBattery);
+
+            for (int i = 0; i < inventory.getSlots(); ++i){
+                if (!(inventory.getStackInSlot(i).getItem() instanceof WeakBatteryItem)){
+                    continue;
+                }
+
+                WeakBatteryItem b = (WeakBatteryItem) inventory.getStackInSlot(i).getItem();
+                int energySent = b.charge(inventory.getStackInSlot(i), energySplit);
+                energyStorage.extractEnergy(energySent, false);
+            }
+        }
+
         // IMPORTANT FOR THE GUI UPDATES AND CLIENT UPDATES
         setChanged();
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);

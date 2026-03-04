@@ -23,14 +23,15 @@ public class ModBlocks {
      () -> new SolarPanel(BlockBehaviour.Properties.of()
         .strength(2f)
         .requiresCorrectToolForDrops()
-        .sound(SoundType.AMETHYST)
+        .sound(SoundType.STONE)
+        .noOcclusion()
     ));
 
     public static final DeferredBlock<Block> BATTERY_CHARGER = registerBlock("battery_charger",
      () -> new BatteryCharger(BlockBehaviour.Properties.of()
         .strength(2f)
         .requiresCorrectToolForDrops()
-        .sound(SoundType.AMETHYST)
+        .sound(SoundType.STONE)
         .noOcclusion()
     ));
 

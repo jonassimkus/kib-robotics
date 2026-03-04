@@ -36,11 +36,13 @@ public class SolarPanelEntity extends BlockEntity implements MenuProvider{
 
     private EnergyStorage energyStorage;
     private IEnergyStorage downwardInterface;
+    public int generationPerTick = 11;
+    public int generatedThisTick = 0;
 
     public SolarPanelEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntity.SOLAR_PANEL_BE.get(), pos, blockState);
 
-        energyStorage = new EnergyStorage(1000);
+        energyStorage = new EnergyStorage(4400);
         // Make sure that the solar panel can only give power from the bottom interface, and they cant recieve any.
         downwardInterface = new IEnergyStorage() {
 
@@ -81,6 +83,9 @@ public class SolarPanelEntity extends BlockEntity implements MenuProvider{
     protected void saveAdditional(CompoundTag tag, Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("solar_panel.storage", energyStorage.serializeNBT(registries));
+
+        // Need to store this for it to appear in the gui container and to sync it with client.
+        tag.putInt("solar_panel.thistick", generatedThisTick);
     }
 
     @Override
@@ -88,6 +93,10 @@ public class SolarPanelEntity extends BlockEntity implements MenuProvider{
         super.loadAdditional(tag, registries);
         if (tag.get("solar_panel.storage") != null){
             energyStorage.deserializeNBT(registries, tag.get("solar_panel.storage"));
+        }
+
+        if (tag.get("solar_panel.thistick") != null){
+            generatedThisTick = tag.getInt("solar_panel.thistick");
         }
     }
 
@@ -112,15 +121,22 @@ public class SolarPanelEntity extends BlockEntity implements MenuProvider{
     }
 
     public void tick(Level level, BlockPos pos, BlockState state){
+        if (!level.isNight()){
+            int generated = energyStorage.receiveEnergy(generationPerTick, false);
+            generatedThisTick = generated;
+        }else{
+            generatedThisTick = 0;
+        }
+
         setChanged();
-        energyStorage.receiveEnergy(3, false);
 
         IEnergyStorage otherStorage =  level.getCapability(Capabilities.EnergyStorage.BLOCK, pos.below(), Direction.UP);
         if (otherStorage != null){
-            int energyStolen = energyStorage.extractEnergy(3, true);
+            int energyStolen = energyStorage.extractEnergy(generationPerTick, true);
             int energySent = otherStorage.receiveEnergy(energyStolen, false);
             energyStorage.extractEnergy(energySent, false);
         }
+
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
@@ -134,6 +150,8 @@ public class SolarPanelEntity extends BlockEntity implements MenuProvider{
         return energyStorage;
     }
 
+
+    // MAKE SURE EVERY SINGLE BLOCK ENTITY HAS THIS, SAVES THE DATA PROPERLLY
     @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {

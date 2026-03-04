@@ -48,7 +48,8 @@ public class BatteryCharger extends BaseEntityBlock{
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         // TODO ADD BREAKING
-        return;
+        level.updateNeighbourForOutputSignal(pos, this);
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
     
     @Override
@@ -74,7 +75,6 @@ public class BatteryCharger extends BaseEntityBlock{
         if (level.isClientSide()){
             return null;
         }
-
 
         return createTickerHelper(blockEntityType, ModBlockEntity.BATTERY_CHARGER_BE.get(), 
                 (levels, blockPos, blockState, blockEntity) -> blockEntity.tick(levels, blockPos, blockState));

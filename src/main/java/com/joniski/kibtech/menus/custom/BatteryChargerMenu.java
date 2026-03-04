@@ -34,19 +34,21 @@ public class BatteryChargerMenu extends AbstractContainerMenu{
         addPlayerInventory(inventory);
         addPlayerHotbar(inventory);
     
-        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 0, 80, 35));
+        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 0, 80-19, 35));
+        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 1, 80, 35));
+        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 2, 80+19, 35));
     }
 
     @Override
     public ItemStack quickMoveStack(Player player, int slotIndex) {
-        if (slotIndex == 36){
-            if (!this.moveItemStackTo(slots.get(slotIndex).getItem(), 0, 36, false)){
+        if (slotIndex >= 36){
+            if (!this.moveItemStackTo(slots.get(slotIndex).getItem(), 0, 8, false)){
                 return ItemStack.EMPTY;
             }
 
             return slots.get(slotIndex).getItem().copy();
         }else{
-            if (!this.moveItemStackTo(slots.get(slotIndex).getItem(), 36, 37, false)){
+            if (!this.moveItemStackTo(slots.get(slotIndex).getItem(), 36, 39, false)){
                 return ItemStack.EMPTY;
             }
             return slots.get(slotIndex).getItem().copy();
