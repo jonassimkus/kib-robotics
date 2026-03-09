@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import com.joniski.kibtech.block.ModBlockEntity;
 import com.joniski.kibtech.block.ModBlocks;
 import com.joniski.kibtech.component.ModDataComponents;
+import com.joniski.kibtech.entity.ModEntities;
 import com.joniski.kibtech.item.ModItems;
 import com.joniski.kibtech.menus.ModMenus;
 import com.mojang.logging.LogUtils;
@@ -50,6 +51,7 @@ public class KibTech {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntity.register(modEventBus);
+        ModEntities.register(modEventBus);
         ModDataComponents.register(modEventBus);
         ModMenus.register(modEventBus);
 

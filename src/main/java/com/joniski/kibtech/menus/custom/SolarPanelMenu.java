@@ -33,6 +33,17 @@ public class SolarPanelMenu extends AbstractContainerMenu{
         addPlayerHotbar(inventory);
     }
 
+
+    public SolarPanelMenu(int containerId, Inventory inventory){
+        super(ModMenus.SOLAR_PANEL_MENU.get(), containerId);
+        this.blockEntity = null;
+
+        this.level = inventory.player.level();
+        
+        addPlayerInventory(inventory);
+        addPlayerHotbar(inventory);
+    }
+
     @Override
     public ItemStack quickMoveStack(Player arg0, int arg1) {
         return ItemStack.EMPTY;

@@ -1,5 +1,7 @@
 package com.joniski.kibtech.block.custom;
 
+import java.util.List;
+
 import com.joniski.kibtech.block.ModBlockEntity;
 import com.mojang.serialization.MapCodec;
 
@@ -18,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams.Builder;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class BatteryCharger extends BaseEntityBlock{
@@ -47,8 +50,12 @@ public class BatteryCharger extends BaseEntityBlock{
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        // TODO ADD BREAKING
         level.updateNeighbourForOutputSignal(pos, this);
+
+        if (level.getBlockEntity(pos) instanceof BatteryChargerEntity batteryChargerEntity){
+            batteryChargerEntity.dropContents();
+        }
+       
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
     
@@ -66,7 +73,6 @@ public class BatteryCharger extends BaseEntityBlock{
 
         return ItemInteractionResult.SUCCESS;
     }
-
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,

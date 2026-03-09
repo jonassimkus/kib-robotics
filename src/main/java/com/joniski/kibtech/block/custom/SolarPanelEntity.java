@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlockEntity;
+import com.joniski.kibtech.menus.custom.RobotMenu;
 import com.joniski.kibtech.menus.custom.SolarPanelMenu;
 
 import net.minecraft.core.BlockPos;

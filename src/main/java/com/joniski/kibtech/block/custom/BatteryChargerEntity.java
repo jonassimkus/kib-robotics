@@ -17,7 +17,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -84,6 +86,7 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
         return new BatteryChargerMenu(arg0, arg1, this);
     }
 
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.kibtech.battery_charger");
@@ -145,6 +148,16 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
     @Override
     public CompoundTag getUpdateTag(Provider registries) {
         return saveWithoutMetadata(registries);
+    }
+
+
+    public void dropContents() {
+        SimpleContainer drops = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < drops.getContainerSize(); ++ i){
+            drops.setItem(i, inventory.getStackInSlot(i));
+        }
+
+        Containers.dropContents(level, worldPosition, drops);
     }
 
 }

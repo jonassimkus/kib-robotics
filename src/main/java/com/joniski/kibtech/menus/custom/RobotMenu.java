@@ -1,42 +1,40 @@
 package com.joniski.kibtech.menus.custom;
 
 import com.joniski.kibtech.block.ModBlocks;
-import com.joniski.kibtech.block.custom.BatteryChargerEntity;
+import com.joniski.kibtech.block.custom.SolarPanelEntity;
+import com.joniski.kibtech.entity.client.WoodRobotAnimations;
+import com.joniski.kibtech.entity.custom.WoodRobotEntity;
 import com.joniski.kibtech.menus.ModMenus;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-public class BatteryChargerMenu extends AbstractContainerMenu{
+public class RobotMenu extends AbstractContainerMenu{
 
-    public final BatteryChargerEntity blockEntity;
     private final Level level;
+    public WoodRobotEntity entity;
 
-    public BatteryChargerMenu(int containerId, Inventory inventory, FriendlyByteBuf extraData) {
-        this(containerId, inventory, inventory.player.level().getBlockEntity(extraData.readBlockPos()));
-    }
-
-    public BatteryChargerMenu(int containerId, Inventory inventory, BlockEntity be){
-        super(ModMenus.BATTERY_CHARGER_MENU.get(), containerId);
-
-        blockEntity = (BatteryChargerEntity)be;
+    public RobotMenu(int containerId, Inventory inventory, int entityId){
+        super(ModMenus.ROBOT_MENU.get(), containerId);
         this.level = inventory.player.level();
+        entity = (WoodRobotEntity) level.getEntity(entityId);
         
         addPlayerInventory(inventory);
         addPlayerHotbar(inventory);
     
-        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 0, 80-19, 35));
-        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 1, 80, 35));
-        this.addSlot(new SlotItemHandler(this.blockEntity.inventory, 2, 80+19, 35));
+        this.addSlot(new SlotItemHandler(entity.inventory, 0, 8, 63));
+        this.addSlot(new SlotItemHandler(entity.inventory, 1, 8, 42));
     }
 
     @Override
@@ -48,7 +46,7 @@ public class BatteryChargerMenu extends AbstractContainerMenu{
 
             return slots.get(slotIndex).getItem().copy();
         }else{
-            if (!this.moveItemStackTo(slots.get(slotIndex).getItem(), 36, 39, false)){
+            if (!this.moveItemStackTo(slots.get(slotIndex).getItem(), 36, 38, false)){
                 return ItemStack.EMPTY;
             }
             return slots.get(slotIndex).getItem().copy();
@@ -57,7 +55,7 @@ public class BatteryChargerMenu extends AbstractContainerMenu{
 
     @Override
     public boolean stillValid(Player arg0) {
-        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), arg0, ModBlocks.BATTERY_CHARGER.get());
+        return true;
     }
 
     private void addPlayerInventory(Inventory playerInventory){
