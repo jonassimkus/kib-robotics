@@ -2,6 +2,7 @@ package com.joniski.kibtech.entity.custom;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Debug;
@@ -12,7 +13,8 @@ import com.joniski.kibtech.component.ModDataComponents;
 import com.joniski.kibtech.component.PowerRecord;
 import com.joniski.kibtech.enums.RobotWorkType;
 import com.joniski.kibtech.item.ModItems;
-import com.joniski.kibtech.item.custom.WeakBatteryItem;
+import com.joniski.kibtech.item.custom.BatteryItem;
+import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.menus.custom.RobotMenu;
 
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -23,7 +25,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.commands.data.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -36,6 +41,7 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -64,12 +70,16 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CarrotBlock;
+import net.minecraft.world.level.block.CropBlock;
 
-public class WoodRobotEntity extends Animal{
+public class RobotEntity extends Animal{
 
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
     private BlockPos targetBlock;
+    // use UUID instead of storing entity, easier for packet and saving nbt data 
+    private UUID followEntityUUID;
     private BlockPos searchStart;
     private BlockPos searchEnd;
     private boolean moving = false;
@@ -120,7 +130,7 @@ public class WoodRobotEntity extends Animal{
         }
     };
 
-    public WoodRobotEntity(EntityType<? extends Animal> entityType, Level level) {
+    public RobotEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
     }
 
@@ -129,13 +139,25 @@ public class WoodRobotEntity extends Animal{
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.put("inventory", inventory.serializeNBT(this.level().registryAccess()));
+
+        if (followEntityUUID != null){
+            tag.putString("follower", followEntityUUID.toString());
+        }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         inventory.deserializeNBT(this.level().registryAccess(), tag.getCompound("inventory"));
-    } 
+
+        if (tag.get("follower") != null){
+            String uuid = tag.getString("follower");
+            if (uuid != null){
+                followEntityUUID = (UUID.fromString(uuid));
+            }
+        }
+    }
+
 
 
 
@@ -158,15 +180,9 @@ public class WoodRobotEntity extends Animal{
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!player.level().isClientSide()){
             if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.openMenu(new SimpleMenuProvider((windId, inv, p) -> new RobotMenu(windId, inv, getId()) , Component.literal("Wood Robot")), buf -> buf.writeInt(getId()));
+                serverPlayer.openMenu(new SimpleMenuProvider((windId, inv, p) -> new RobotMenu(windId, inv, getId()) , Component.literal("Robot Settings")), buf -> buf.writeInt(getId()));
             }
 
-            if (hand == InteractionHand.MAIN_HAND){
-                if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() == Items.ACACIA_BOAT){
-                    searchStart = getOnPos().subtract(new Vec3i(5,5,5));
-                    searchEnd = getOnPos().offset(new Vec3i(5,5,5));
-                }
-            }
         }
 
         return InteractionResult.SUCCESS;
@@ -209,10 +225,26 @@ public class WoodRobotEntity extends Animal{
         }   
     }
 
+    public void setFollowEntity(Entity e){
+        if (e == null){
+            followEntityUUID = null;
+            return;
+        }
+
+        followEntityUUID = e.getUUID();
+    }
+
+    public Entity getFollowEntity(){
+        if (followEntityUUID == null){
+            return null;
+        }
+
+        return level().getPlayerByUUID(followEntityUUID);
+    }
 
     public void work(){
         ItemStack batteryStack = inventory.getStackInSlot(0);
-        if (batteryStack.getItem() instanceof WeakBatteryItem battery){
+        if (batteryStack.getItem() instanceof BatteryItem battery){
             PowerRecord power = batteryStack.get(ModDataComponents.POWER_COMPONENT);
             
             if (power == null){
@@ -222,44 +254,76 @@ public class WoodRobotEntity extends Animal{
             if (power.power() > 0){
                 batteryStack.set(ModDataComponents.POWER_COMPONENT, new PowerRecord(power.power()-1));
 
-                if (searchStart == null || searchEnd == null){
+                Entity followEntity = getFollowEntity();
+
+                if (followEntity == null && followEntityUUID != null){
+                    followEntity = level().getPlayerByUUID(followEntityUUID);
+                }
+
+                if (followEntity == null && (searchStart == null || searchEnd == null)){
                     return;
                 }
 
                 if (!moving){
+                    if (followEntity != null){
+                        if (targetBlock != null && targetBlock.getCenter().distanceTo(followEntity.getOnPos().getCenter()) >= 10){
+                            getNavigation().moveTo(followEntity, 1);
+                        }
+
+                        if (targetBlock == null){
+                            getNavigation().moveTo(followEntity, 1);
+
+                            searchStart = getOnPos().subtract(new Vec3i(5,5,5));
+                            searchEnd = getOnPos().offset(new Vec3i(5,5,5));
+                        }
+                    }
+
                     everyValidBlock.clear();
                     for(int y = searchStart.getY(); y < searchEnd.getY(); ++ y){
                         for(int x = searchStart.getX(); x < searchEnd.getX(); ++ x){
                             for(int z = searchStart.getZ(); z < searchEnd.getZ(); ++ z){
                                 BlockPos newPos = new BlockPos(x, y, z);
                                 if (validWorkBlock(level(), newPos, workType)){
+                                    if(followEntity != null && newPos.getCenter().distanceTo(followEntity.getOnPos().getCenter()) >= 10){
+                                        continue;
+                                    }
                                     everyValidBlock.add(newPos);
                                 }
                             }
                         }
                     }
 
+                    PathNavigation pathNavigation = this.createNavigation(level());
+
                     double closestDistance = 10000;
                     BlockPos closestBlock = null;
                     for (BlockPos pos : everyValidBlock){
                         if (pos.getCenter().distanceTo(getOnPos().getCenter()) < closestDistance){
-                            Path p = getNavigation().createPath(pos, 0);
+                            Path p = pathNavigation.createPath(pos, 0);
                             if (p != null && p.canReach()){
                                 // Make sure robot can get right up, or he tries to path find to blocks behind stuff.
-                                if(p.getEndNode().distanceTo(pos) <= 1.5){
+                                if(p.getEndNode().distanceTo(pos) <= 1){
                                     closestDistance = pos.getCenter().distanceTo(getOnPos().getCenter());
                                     closestBlock = pos;
                                 }
                             }
-                            getNavigation().stop();
+                            pathNavigation.stop();
                         }
                     }
 
                     if (closestBlock != null){
                         targetBlock = closestBlock;
                         moving = true;
+                        getNavigation().stop();
                     }
                 }else{
+                    if (followEntity != null && targetBlock.getCenter().distanceTo(followEntity.getOnPos().getCenter()) >= 10){
+                        getNavigation().stop();
+                        getNavigation().moveTo(followEntity, 1);
+                        moving = false;
+                        targetBlock = null;
+                    }
+
                     if (getNavigation().isStuck()){
                         getNavigation().stop();
                         targetBlock = null;
@@ -270,7 +334,15 @@ public class WoodRobotEntity extends Animal{
                     // there is no path, I don't want this or it makes all blocks destroy at same time :)
                     if (getNavigation().getPath() != null && getNavigation().getPath().isDone()){
                         getNavigation().stop();
+
+                        BlockState oldBlockState = level().getBlockState(targetBlock);
                         level().destroyBlock(targetBlock, false);
+
+                        if (workType == RobotWorkType.FARMER){
+                            CropBlock block = (CropBlock)oldBlockState.getBlock();
+                            oldBlockState = block.getStateForAge(0);
+                            level().setBlock(targetBlock, oldBlockState, 0);
+                        }
                         level().updateNeighborsAt(searchEnd, null);
                         targetBlock = null;
                         moving = false;
@@ -308,11 +380,31 @@ public class WoodRobotEntity extends Animal{
 
         if (workType == RobotWorkType.MINER){
             for (TagKey tag : level.getBlockState(blockPos).getTags().toList()){
-                if (tag.toString().contains("ore")){
+                if (tag.toString().contains("lava")){
+                    return false;
+                }
+
+                if (tag.toString().contains("drip")){
+                    return false;
+                }
+
+                if (tag.toString().contains("brick")){
+                    return false;
+                }
+
+                if (tag.toString().contains("ores")){
                     return true;
                 }
 
                 if (tag.toString().contains("stone")){
+                    return true;
+                }
+            }
+        }
+
+        if (workType == RobotWorkType.FARMER){
+            if (level.getBlockState(blockPos).getBlock() instanceof CropBlock crop){
+                if (crop.isMaxAge(level.getBlockState(blockPos))){
                     return true;
                 }
             }

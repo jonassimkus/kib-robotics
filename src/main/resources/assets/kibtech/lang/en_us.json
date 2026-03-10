@@ -4,6 +4,7 @@
   "block.kibtech.battery_charger": "Battery Charger",
 
   "item.kibtech.weak_battery": "Weak Battery",
+  "item.kibtech.strong_battery": "Strong Battery",
 
   "kibtech.configuration.title": "Kib Tech Configs",
   "kibtech.configuration.section.kibtech.common.toml": "Kib Tech Configs",

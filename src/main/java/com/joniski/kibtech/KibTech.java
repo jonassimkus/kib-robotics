@@ -39,6 +39,7 @@ public class KibTech {
         .icon(() -> new ItemStack(ModItems.WEAK_BATTERY.get()))
         .displayItems((params, output) ->{
             output.accept(ModItems.WEAK_BATTERY.get());
+            output.accept(ModItems.STRONG_BATTERY.get());
             output.accept(ModBlocks.SOLAR_PANEL.get());
             output.accept(ModBlocks.BATTERY_CHARGER.get());
         })

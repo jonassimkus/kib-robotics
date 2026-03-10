@@ -21,12 +21,13 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-public class WeakBatteryItem extends Item {
+public class BatteryItem extends Item {
 
     private int maxPower = 3240;
 
-    public WeakBatteryItem(Properties properties) {
+    public BatteryItem(Properties properties, int maxPower) {
         super(properties);
+        this.maxPower = maxPower;
     }
 
     @Override

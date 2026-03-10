@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlockEntity;
 import com.joniski.kibtech.block.ModBlocks;
-import com.joniski.kibtech.item.custom.WeakBatteryItem;
+import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.menus.custom.BatteryChargerMenu;
 import com.joniski.kibtech.menus.custom.SolarPanelMenu;
 
@@ -101,7 +101,7 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
         int amountOfBattery = 0;
 
         for (int i = 0; i < inventory.getSlots(); ++i){
-            if (inventory.getStackInSlot(i).getItem() instanceof WeakBatteryItem battery){
+            if (inventory.getStackInSlot(i).getItem() instanceof BatteryItem battery){
                 if (!battery.isFull(inventory.getStackInSlot(i))){
                     amountOfBattery+=1;
                 }
@@ -113,11 +113,11 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
             int energySplit = (int)(energyStolen / amountOfBattery);
 
             for (int i = 0; i < inventory.getSlots(); ++i){
-                if (!(inventory.getStackInSlot(i).getItem() instanceof WeakBatteryItem)){
+                if (!(inventory.getStackInSlot(i).getItem() instanceof BatteryItem)){
                     continue;
                 }
 
-                WeakBatteryItem b = (WeakBatteryItem) inventory.getStackInSlot(i).getItem();
+                BatteryItem b = (BatteryItem) inventory.getStackInSlot(i).getItem();
                 int energySent = b.charge(inventory.getStackInSlot(i), energySplit);
                 energyStorage.extractEnergy(energySent, false);
             }

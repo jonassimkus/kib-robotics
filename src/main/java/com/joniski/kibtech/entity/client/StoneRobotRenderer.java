@@ -9,15 +9,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-public class WoodRobotRenderer extends MobRenderer<RobotEntity, WoodRobotModel<RobotEntity>>{
+public class StoneRobotRenderer extends MobRenderer<RobotEntity, StoneRobotModel<RobotEntity>>{
 
-    public WoodRobotRenderer(Context context) {
-        super(context, new WoodRobotModel<>(context.bakeLayer(WoodRobotModel.LAYER_LOCATION)), 0.3f);
+    public StoneRobotRenderer(Context context) {
+        super(context, new StoneRobotModel<>(context.bakeLayer(StoneRobotModel.LAYER_LOCATION)), 0.3f);
     }
 
     @Override
     public ResourceLocation getTextureLocation(RobotEntity arg0) {
-        return ResourceLocation.fromNamespaceAndPath(KibTech.MODID, "textures/entity/wood_robot.png");
+        return ResourceLocation.fromNamespaceAndPath(KibTech.MODID, "textures/entity/stone_robot.png");
     }
 
     @Override
