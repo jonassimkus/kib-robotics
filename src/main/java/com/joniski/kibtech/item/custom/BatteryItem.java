@@ -1,19 +1,26 @@
 package com.joniski.kibtech.item.custom;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlocks;
 import com.joniski.kibtech.block.custom.BatteryCharger;
 import com.joniski.kibtech.component.ModDataComponents;
 import com.joniski.kibtech.component.PowerRecord;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;

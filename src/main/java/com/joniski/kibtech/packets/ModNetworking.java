@@ -59,6 +59,7 @@ public class ModNetworking {
     public static void registerAttributes(EntityAttributeCreationEvent event){
         event.put(ModEntities.WOOD_ROBOT.get(), RobotEntity.createAttributes().build());
         event.put(ModEntities.STONE_ROBOT.get(), RobotEntity.createAttributes().build());
+        event.put(ModEntities.IRON_ROBOT.get(), RobotEntity.createAttributes().build());
     }
 
 }

@@ -53,6 +53,14 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         };
+
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if(stack.getItem() instanceof BatteryItem){
+                return true;
+            }
+
+            return false;
+        };
     };
 
     private int chargeRate = 15;

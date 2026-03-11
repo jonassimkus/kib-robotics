@@ -16,7 +16,9 @@ import com.joniski.kibtech.item.ModItems;
 import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.menus.custom.RobotMenu;
+import com.joniski.kibtech.uitl.TreeUtil;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -31,6 +33,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.data.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
@@ -57,7 +61,10 @@ import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoubleBlockCombiner.BlockType;
@@ -66,25 +73,28 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.entity.EntityType.Builder;
 
 public class RobotEntity extends Animal{
 
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
-    private BlockPos targetBlock;
+    protected Tiers maxToolTier = Tiers.WOOD;
+    protected float moveSpeed = 0.75f;
     // use UUID instead of storing entity, easier for packet and saving nbt data 
     private UUID followEntityUUID;
-    private BlockPos searchStart;
+    private BlockPos searchStart = null;
     private BlockPos searchEnd;
+    private List<BlockPos> targetTree;
     private boolean moving = false;
     private RobotWorkType workType = RobotWorkType.NONE;
-    private List<BlockPos> everyValidBlock = new ArrayList<BlockPos>();
 
    // Slot 1: Battery; Slot 2: Tool
     public final ItemStackHandler inventory = new ItemStackHandler(2){
@@ -103,6 +113,31 @@ public class RobotEntity extends Animal{
             }
         };
 
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if (slot == 0 && stack.getItem() instanceof BatteryItem){
+                return true;
+            }
+
+            if (slot == 1){
+                if (stack.getItem() instanceof TieredItem tieredItem){
+                    if(tieredItem.getTier().getAttackDamageBonus() > maxToolTier.getAttackDamageBonus()){
+                        return false;
+                    }
+
+                }
+                
+                if (stack.getItem() instanceof AxeItem){
+                    return true;
+                }
+                if (stack.getItem() instanceof HoeItem){
+                    return true;
+                }
+            }
+
+
+            return false;
+        };
+
         protected void onLoad() {
             setJob(getStackInSlot(1));
         };
@@ -112,6 +147,7 @@ public class RobotEntity extends Animal{
                 workType = RobotWorkType.NONE;
                 return;
             }
+
 
             if (stack.getItem() instanceof AxeItem axe){
                 workType = RobotWorkType.LUMBERJACK;
@@ -134,7 +170,6 @@ public class RobotEntity extends Animal{
         super(entityType, level);
     }
 
-    
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -142,6 +177,20 @@ public class RobotEntity extends Animal{
 
         if (followEntityUUID != null){
             tag.putString("follower", followEntityUUID.toString());
+        }
+
+        if (searchStart != null){
+            List<Integer> start = new ArrayList<Integer>();
+            List<Integer> end = new ArrayList<Integer>();
+            start.add(searchStart.getX());
+            end.add(searchEnd.getX());
+            start.add(searchStart.getY());
+            end.add(searchEnd.getY());
+            start.add(searchStart.getZ());
+            end.add(searchEnd.getZ());
+
+            tag.putIntArray("searchStart", start);
+            tag.putIntArray("searchEnd", end);
         }
     }
 
@@ -156,10 +205,22 @@ public class RobotEntity extends Animal{
                 followEntityUUID = (UUID.fromString(uuid));
             }
         }
+
+        if (tag.get("searchStart") != null){
+            int[] start = tag.getIntArray("searchStart");
+            if (start.length >= 3){
+                searchStart = new BlockPos(start[0], start[1], start[2]);
+            }
+
+        }
+
+        if (tag.get("searchEnd") != null){
+            int[] end = tag.getIntArray("searchEnd");
+            if (end.length >= 3){
+                searchEnd = new BlockPos(end[0], end[1], end[2]);
+            }
+        }
     }
-
-
-
 
     @Override
     protected void registerGoals() {
@@ -181,6 +242,8 @@ public class RobotEntity extends Animal{
         if (!player.level().isClientSide()){
             if (player instanceof ServerPlayer serverPlayer) {
                 serverPlayer.openMenu(new SimpleMenuProvider((windId, inv, p) -> new RobotMenu(windId, inv, getId()) , Component.literal("Robot Settings")), buf -> buf.writeInt(getId()));
+                searchStart = blockPosition().offset(-5, -5, -5);
+                searchEnd = blockPosition().offset(5, 5, 5);
             }
 
         }
@@ -243,125 +306,220 @@ public class RobotEntity extends Animal{
     }
 
     public void work(){
-        ItemStack batteryStack = inventory.getStackInSlot(0);
-        if (batteryStack.getItem() instanceof BatteryItem battery){
-            PowerRecord power = batteryStack.get(ModDataComponents.POWER_COMPONENT);
-            
-            if (power == null){
+        ItemStack battStack = inventory.getStackInSlot(0);
+        if (!(battStack.getItem() instanceof BatteryItem battery)){
+            return;
+        }
+
+        PowerRecord power = battStack.get(ModDataComponents.POWER_COMPONENT);
+        if (power == null){
+            return;
+        }
+
+        if (power.power() > 1){
+            battStack.set(ModDataComponents.POWER_COMPONENT, new PowerRecord(power.power()-1));
+        }
+
+        Entity followEntity = getFollowEntity();
+
+        if (followEntity != null){
+            follow();
+            return;
+        }
+
+        if (workType == RobotWorkType.FARMER){
+            farm();
+            return;
+        }
+
+        if (workType == RobotWorkType.LUMBERJACK){
+            lumberjack();
+            return;
+        }
+    }
+
+    public void follow(){
+        if (distanceTo(getFollowEntity()) < 2){
+            return;
+        }
+
+        if (getNavigation().isDone() || getNavigation().isStuck()){
+            moving = false;
+        }
+
+        if (moving == false){
+            getNavigation().moveTo(getFollowEntity(), moveSpeed);
+            moving = true;
+        }
+    }
+
+    public void farm(){
+        if (searchStart == null || searchEnd == null){
+            return;
+        }
+
+        if(!moving){
+            List<BlockPos> validBlocks = getValidBlocks(level(), searchStart, searchEnd, workType);
+            BlockPos closest = getClosestBlock(validBlocks, blockPosition());
+
+            if (closest == null){
                 return;
             }
 
-            if (power.power() > 0){
-                batteryStack.set(ModDataComponents.POWER_COMPONENT, new PowerRecord(power.power()-1));
+            getNavigation().moveTo(closest.getX(), closest.getY(), closest.getZ(), moveSpeed);
+            moving = true;
+            return;
+        }
 
-                Entity followEntity = getFollowEntity();
+        if (getNavigation().isStuck()){
+            moving = false;
+            return;
+        }
 
-                if (followEntity == null && followEntityUUID != null){
-                    followEntity = level().getPlayerByUUID(followEntityUUID);
-                }
+        if (getNavigation().isDone()){
+            BlockPos targetPos = getNavigation().getTargetPos();
+            BlockState oldBlockState = level().getBlockState(targetPos);
+            level().destroyBlock(targetPos, false);
 
-                if (followEntity == null && (searchStart == null || searchEnd == null)){
-                    return;
-                }
+            if (!(oldBlockState.getBlock() instanceof CropBlock block)){
+                return;
+            }
 
-                if (!moving){
-                    if (followEntity != null){
-                        if (targetBlock != null && targetBlock.getCenter().distanceTo(followEntity.getOnPos().getCenter()) >= 10){
-                            getNavigation().moveTo(followEntity, 1);
-                        }
+            oldBlockState = block.getStateForAge(0);
+            level().setBlock(targetPos, oldBlockState, 0);
+            moving = false;
+            return;
+        }
 
-                        if (targetBlock == null){
-                            getNavigation().moveTo(followEntity, 1);
+        if (getNavigation().getPath() == null){
+            moving = false;
+            return;
+        }
 
-                            searchStart = getOnPos().subtract(new Vec3i(5,5,5));
-                            searchEnd = getOnPos().offset(new Vec3i(5,5,5));
-                        }
-                    }
+    }
 
-                    everyValidBlock.clear();
-                    for(int y = searchStart.getY(); y < searchEnd.getY(); ++ y){
-                        for(int x = searchStart.getX(); x < searchEnd.getX(); ++ x){
-                            for(int z = searchStart.getZ(); z < searchEnd.getZ(); ++ z){
-                                BlockPos newPos = new BlockPos(x, y, z);
-                                if (validWorkBlock(level(), newPos, workType)){
-                                    if(followEntity != null && newPos.getCenter().distanceTo(followEntity.getOnPos().getCenter()) >= 10){
-                                        continue;
-                                    }
-                                    everyValidBlock.add(newPos);
-                                }
+    public void lumberjack(){
+        if (searchStart == null || searchEnd == null){
+            return;
+        }
+
+        if (!moving){
+            List<BlockPos> tree = findClosestTreeInArea(getCommandSenderWorld(), searchStart, searchEnd, blockPosition());
+            if (tree.size() > 0){
+                BlockPos closestBlock = getClosestBlock(tree, blockPosition());
+                closestBlock = getNearestClearBlock(level(), closestBlock, blockPosition());
+
+                targetTree = tree;
+                getNavigation().moveTo(closestBlock.getX(), closestBlock.getY(), closestBlock.getZ(), 1, moveSpeed);
+                moving = true;
+            }
+
+            return;
+        }
+
+        if (getNavigation().isStuck()){
+            moving = false;
+            return;
+        }
+
+        if (getNavigation().isDone()){
+            if (targetTree == null){
+                moving = false;
+                return;
+            }
+            
+            for(BlockPos log: targetTree){
+                level().destroyBlock(log, false);
+                targetTree = null;
+            }
+
+            moving = false;
+            return;
+        }
+
+        if (getNavigation().getPath() == null){
+            moving = false;
+            return;
+        }
+    }
+
+    public static List<BlockPos> findClosestTreeInArea(Level level, BlockPos start, BlockPos end, BlockPos current){
+        List<BlockPos> logs = new ArrayList<BlockPos>();
+
+        List<List<BlockPos>> trees = new ArrayList<List<BlockPos>>();
+        
+        for(int y = start.getY(); y < end.getY(); ++ y){
+            for(int x = start.getX(); x < end.getX(); ++ x){
+                for(int z = start.getZ(); z < end.getZ(); ++ z){
+                    BlockPos newPos = new BlockPos(x, y, z);
+
+                    List<BlockPos> tree = TreeUtil.getTree(level, newPos);
+                    if (tree.size() >= 3){
+                        boolean found = false;
+                        for(List<BlockPos> treeX : trees){
+                            if (treeX.equals(tree)){
+                                found = true;
+                                break;
                             }
                         }
-                    }
 
-                    PathNavigation pathNavigation = this.createNavigation(level());
-
-                    double closestDistance = 10000;
-                    BlockPos closestBlock = null;
-                    for (BlockPos pos : everyValidBlock){
-                        if (pos.getCenter().distanceTo(getOnPos().getCenter()) < closestDistance){
-                            Path p = pathNavigation.createPath(pos, 0);
-                            if (p != null && p.canReach()){
-                                // Make sure robot can get right up, or he tries to path find to blocks behind stuff.
-                                if(p.getEndNode().distanceTo(pos) <= 1){
-                                    closestDistance = pos.getCenter().distanceTo(getOnPos().getCenter());
-                                    closestBlock = pos;
-                                }
-                            }
-                            pathNavigation.stop();
+                        if (found == false){
+                            trees.add(tree);
                         }
-                    }
-
-                    if (closestBlock != null){
-                        targetBlock = closestBlock;
-                        moving = true;
-                        getNavigation().stop();
-                    }
-                }else{
-                    if (followEntity != null && targetBlock.getCenter().distanceTo(followEntity.getOnPos().getCenter()) >= 10){
-                        getNavigation().stop();
-                        getNavigation().moveTo(followEntity, 1);
-                        moving = false;
-                        targetBlock = null;
-                    }
-
-                    if (getNavigation().isStuck()){
-                        getNavigation().stop();
-                        targetBlock = null;
-                        moving = false;
-                    }
-
-                    // Use this way instead of doing getNavigation().isDone() as that also returns true if
-                    // there is no path, I don't want this or it makes all blocks destroy at same time :)
-                    if (getNavigation().getPath() != null && getNavigation().getPath().isDone()){
-                        getNavigation().stop();
-
-                        BlockState oldBlockState = level().getBlockState(targetBlock);
-                        level().destroyBlock(targetBlock, false);
-
-                        if (workType == RobotWorkType.FARMER){
-                            CropBlock block = (CropBlock)oldBlockState.getBlock();
-                            oldBlockState = block.getStateForAge(0);
-                            level().setBlock(targetBlock, oldBlockState, 0);
-                        }
-                        level().updateNeighborsAt(searchEnd, null);
-                        targetBlock = null;
-                        moving = false;
-                    }
-
-
-                    if (!validWorkBlock(level(), targetBlock, workType)){
-                        moving = false;
-                        targetBlock = null;
-                        getNavigation().stop();
-                    }else{
-                        getNavigation().moveTo(targetBlock.getX(), targetBlock.getY(), targetBlock.getZ(), 1);
                     }
                 }
             }
         }
+
+        double closestTreeDist = 9999;
+        for(List<BlockPos> tree : trees){
+            if (tree.get(0).distToCenterSqr(current.getCenter()) < closestTreeDist){
+                closestTreeDist = tree.get(0).distToCenterSqr(current.getCenter());
+                logs = tree;
+            }
+        }
+
+        return logs;
+    }
+    
+    public static List<BlockPos> getValidBlocks(Level level, BlockPos start, BlockPos end, RobotWorkType workType){
+        List<BlockPos> blocks = new ArrayList<BlockPos>();
+
+        for(int y = start.getY(); y < end.getY(); ++ y){
+            for(int x = start.getX(); x < end.getX(); ++ x){
+                for(int z = start.getZ(); z < end.getZ(); ++ z){
+                    BlockPos newPos = new BlockPos(x, y, z);
+                    if (isValidWorkBlock(level, newPos, workType)){
+                        blocks.add(newPos);
+                    }
+                }
+            }
+        }
+
+        return blocks;
     }
 
-    public static Boolean validWorkBlock(Level level, BlockPos blockPos, RobotWorkType workType){
+    public static BlockPos getClosestBlock(List<BlockPos> blocks, BlockPos from){
+        BlockPos closest = null;
+        if (blocks.size() == 0){
+            return closest;
+        }
+
+        closest = blocks.get(0);
+        double closestDist = blocks.get(0).distToCenterSqr(from.getCenter());
+
+        for (BlockPos pos : blocks){
+            double dist = pos.distToCenterSqr(from.getCenter());
+            if (dist < closestDist){
+                closestDist = dist;
+                closest = pos;
+            }
+        }
+
+        return closest;
+    }
+
+    public static Boolean isValidWorkBlock(Level level, BlockPos blockPos, RobotWorkType workType){
         if (blockPos == null){
             return false;
         }
@@ -373,30 +531,6 @@ public class RobotEntity extends Animal{
         if (workType == RobotWorkType.LUMBERJACK){
             for (TagKey tag : level.getBlockState(blockPos).getTags().toList()){
                 if (tag.toString().contains("minecraft:logs")){
-                    return true;
-                }
-            }
-        }
-
-        if (workType == RobotWorkType.MINER){
-            for (TagKey tag : level.getBlockState(blockPos).getTags().toList()){
-                if (tag.toString().contains("lava")){
-                    return false;
-                }
-
-                if (tag.toString().contains("drip")){
-                    return false;
-                }
-
-                if (tag.toString().contains("brick")){
-                    return false;
-                }
-
-                if (tag.toString().contains("ores")){
-                    return true;
-                }
-
-                if (tag.toString().contains("stone")){
                     return true;
                 }
             }
@@ -420,6 +554,53 @@ public class RobotEntity extends Animal{
         }
 
         Containers.dropContents(level(), getOnPos(), drops);
+    }
+
+    public static BlockPos getNearestClearBlock(Level level, BlockPos blockPos, BlockPos current){
+        BlockPos closestPos = null;
+        double distance = 999999;
+
+        if (!level.getBlockState(blockPos.above()).isSolidRender(level, blockPos.above())){
+            closestPos = blockPos.above();
+            distance = blockPos.above().distToCenterSqr(current.getCenter());
+        }
+
+        if(!level.getBlockState(blockPos.south()).isSolidRender(level, blockPos.south())){
+            if (blockPos.south().distToCenterSqr(current.getCenter()) < distance){
+                closestPos = blockPos.south();
+                distance = blockPos.south().distToCenterSqr(current.getCenter());
+            }
+        }
+
+        if(!level.getBlockState(blockPos.east()).isSolidRender(level, blockPos.east())){
+            if (blockPos.east().distToCenterSqr(current.getCenter()) < distance){
+                closestPos = blockPos.east();
+                distance = blockPos.east().distToCenterSqr(current.getCenter());
+            }
+        }
+
+        if(!level.getBlockState(blockPos.west()).isSolidRender(level, blockPos.west())){
+            if (blockPos.west().distToCenterSqr(current.getCenter()) < distance){
+                closestPos = blockPos.west();
+                distance = blockPos.west().distToCenterSqr(current.getCenter());
+            }
+        }
+
+        if(!level.getBlockState(blockPos.north()).isSolidRender(level, blockPos.north())){
+            if (blockPos.north().distToCenterSqr(current.getCenter()) < distance){
+                closestPos = blockPos.north();
+                distance = blockPos.north().distToCenterSqr(current.getCenter());
+            }
+        }
+
+        if(!level.getBlockState(blockPos.below()).isSolidRender(level, blockPos.below())){
+            if (blockPos.below().distToCenterSqr(current.getCenter()) < distance){
+                closestPos = blockPos.below();
+                distance = blockPos.below().distToCenterSqr(current.getCenter());
+            }
+        }
+
+        return closestPos;
     }
 }
     

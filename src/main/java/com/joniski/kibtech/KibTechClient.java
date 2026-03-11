@@ -1,6 +1,8 @@
 package com.joniski.kibtech;
 
 import com.joniski.kibtech.entity.ModEntities;
+import com.joniski.kibtech.entity.client.IronRobotModel;
+import com.joniski.kibtech.entity.client.IronRobotRenderer;
 import com.joniski.kibtech.entity.client.StoneRobotModel;
 import com.joniski.kibtech.entity.client.StoneRobotRenderer;
 import com.joniski.kibtech.entity.client.WoodRobotModel;
@@ -44,6 +46,7 @@ public class KibTechClient {
     static void onClientSetup(FMLClientSetupEvent event) {
         EntityRenderers.register(ModEntities.WOOD_ROBOT.get(), WoodRobotRenderer::new);
         EntityRenderers.register(ModEntities.STONE_ROBOT.get(), StoneRobotRenderer::new);
+        EntityRenderers.register(ModEntities.IRON_ROBOT.get(), IronRobotRenderer::new);
     }
 
     @SubscribeEvent
@@ -57,8 +60,9 @@ public class KibTechClient {
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event){
         event.registerLayerDefinition(WoodRobotModel.LAYER_LOCATION, WoodRobotModel::createBodyLayer);
         event.registerLayerDefinition(StoneRobotModel.LAYER_LOCATION, StoneRobotModel::createBodyLayer);
+        event.registerLayerDefinition(IronRobotModel.LAYER_LOCATION, IronRobotModel::createBodyLayer);
     }
-
+ 
   
 }
 
