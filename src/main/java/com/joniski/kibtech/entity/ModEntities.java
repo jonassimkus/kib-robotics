@@ -7,6 +7,7 @@ import org.checkerframework.checker.signature.qual.Identifier;
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlocks;
 import com.joniski.kibtech.block.custom.SolarPanelEntity;
+import com.joniski.kibtech.entity.custom.DiamondRobotEntity;
 import com.joniski.kibtech.entity.custom.IronRobotEntity;
 import com.joniski.kibtech.entity.custom.RobotEntity;
 import com.joniski.kibtech.entity.custom.StoneRobotEntity;
@@ -38,6 +39,12 @@ public class ModEntities {
     public static final Supplier<EntityType<IronRobotEntity>> IRON_ROBOT = 
         ENTITIES.register("iron_robot_entity",  () -> EntityType.Builder.of(IronRobotEntity::new,
              MobCategory.MISC).sized(.5f, .5f).build("iron_robot_entity"));
+
+    public static final Supplier<EntityType<DiamondRobotEntity>> DIAMOND_ROBOT = 
+        ENTITIES.register("diamond_robot_entity",  () -> EntityType.Builder.of(DiamondRobotEntity::new,
+             MobCategory.MISC).sized(.5f, .5f).build("diamond_robot_entity"));
+
+
 
     public static void register(IEventBus eventBus){
         ENTITIES.register(eventBus);

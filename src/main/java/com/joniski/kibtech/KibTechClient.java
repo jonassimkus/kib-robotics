@@ -1,12 +1,15 @@
 package com.joniski.kibtech;
 
 import com.joniski.kibtech.entity.ModEntities;
+import com.joniski.kibtech.entity.client.DiamondRobotModel;
+import com.joniski.kibtech.entity.client.DiamondRobotRenderer;
 import com.joniski.kibtech.entity.client.IronRobotModel;
 import com.joniski.kibtech.entity.client.IronRobotRenderer;
 import com.joniski.kibtech.entity.client.StoneRobotModel;
 import com.joniski.kibtech.entity.client.StoneRobotRenderer;
 import com.joniski.kibtech.entity.client.WoodRobotModel;
 import com.joniski.kibtech.entity.client.WoodRobotRenderer;
+import com.joniski.kibtech.entity.custom.DiamondRobotEntity;
 import com.joniski.kibtech.entity.custom.RobotEntity;
 import com.joniski.kibtech.menus.ModMenus;
 import com.joniski.kibtech.menus.custom.BatteryChargerScreen;
@@ -47,6 +50,7 @@ public class KibTechClient {
         EntityRenderers.register(ModEntities.WOOD_ROBOT.get(), WoodRobotRenderer::new);
         EntityRenderers.register(ModEntities.STONE_ROBOT.get(), StoneRobotRenderer::new);
         EntityRenderers.register(ModEntities.IRON_ROBOT.get(), IronRobotRenderer::new);
+        EntityRenderers.register(ModEntities.DIAMOND_ROBOT.get(), DiamondRobotRenderer::new);
     }
 
     @SubscribeEvent
@@ -61,6 +65,7 @@ public class KibTechClient {
         event.registerLayerDefinition(WoodRobotModel.LAYER_LOCATION, WoodRobotModel::createBodyLayer);
         event.registerLayerDefinition(StoneRobotModel.LAYER_LOCATION, StoneRobotModel::createBodyLayer);
         event.registerLayerDefinition(IronRobotModel.LAYER_LOCATION, IronRobotModel::createBodyLayer);
+        event.registerLayerDefinition(DiamondRobotModel.LAYER_LOCATION, DiamondRobotModel::createBodyLayer);
     }
  
   

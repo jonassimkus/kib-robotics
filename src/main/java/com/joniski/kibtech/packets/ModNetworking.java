@@ -60,6 +60,7 @@ public class ModNetworking {
         event.put(ModEntities.WOOD_ROBOT.get(), RobotEntity.createAttributes().build());
         event.put(ModEntities.STONE_ROBOT.get(), RobotEntity.createAttributes().build());
         event.put(ModEntities.IRON_ROBOT.get(), RobotEntity.createAttributes().build());
+        event.put(ModEntities.DIAMOND_ROBOT.get(), RobotEntity.createAttributes().build());
     }
 
 }
