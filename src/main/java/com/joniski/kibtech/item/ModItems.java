@@ -2,7 +2,10 @@ package com.joniski.kibtech.item;
 
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlocks;
+import com.joniski.kibtech.entity.ModEntities;
+import com.joniski.kibtech.entity.custom.RobotEntity;
 import com.joniski.kibtech.item.custom.BatteryItem;
+import com.joniski.kibtech.item.custom.RobotItem;
 
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -15,6 +18,10 @@ public class ModItems {
 
         public static final DeferredItem<Item> WEAK_BATTERY = ITEMS.register("weak_battery", () -> new BatteryItem(new Item.Properties().stacksTo(1), 3250));
         public static final DeferredItem<Item> STRONG_BATTERY = ITEMS.register("strong_battery", () -> new BatteryItem(new Item.Properties().stacksTo(1), 55500));
+        public static final DeferredItem<Item> WOOD_ROBOT_ITEM = ITEMS.register("wood_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.WOOD_ROBOT.get()));
+        public static final DeferredItem<Item> STONE_ROBOT_ITEM = ITEMS.register("stone_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.STONE_ROBOT.get()));
+        public static final DeferredItem<Item> IRON_ROBOOT_ITEM = ITEMS.register("iron_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.IRON_ROBOT.get()));
+        public static final DeferredItem<Item> DIAMOND_ROBOOT_ITEM = ITEMS.register("diamond_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.DIAMOND_ROBOT.get()));
 
         public static void register(IEventBus modEventBus){
             ITEMS.register(modEventBus);

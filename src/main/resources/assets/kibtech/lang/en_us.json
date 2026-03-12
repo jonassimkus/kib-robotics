@@ -5,6 +5,10 @@
 
   "item.kibtech.weak_battery": "Weak Battery",
   "item.kibtech.strong_battery": "Strong Battery",
+  "item.kibtech.wood_robot_item": "Wood Robot",
+  "item.kibtech.stone_robot_item": "Stone Robot",
+  "item.kibtech.iron_robot_item": "Iron Robot",
+  "item.kibtech.diamond_robot_item": "Diamond Robot",
 
   "kibtech.configuration.title": "Kib Tech Configs",
   "kibtech.configuration.section.kibtech.common.toml": "Kib Tech Configs",
