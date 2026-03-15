@@ -12,10 +12,10 @@ public class IronRobotEntity extends RobotEntity{
     public IronRobotEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
         maxToolTier = Tiers.IRON;
-        moveSpeed = 1.1f;
+        moveSpeed = 0.9f;
         maxArea = 9;
         dropItem = ModItems.IRON_ROBOT_ITEM.asItem();
-        inventory.setSize(6);
+        inventory.setSize(11);
     }
 }
     

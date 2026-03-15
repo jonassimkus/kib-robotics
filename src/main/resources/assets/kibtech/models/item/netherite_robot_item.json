@@ -1,6 +1,6 @@
 {
     "parent": "minecraft:item/generated",
     "textures": {
-        "layer0": "kibtech:item/stone_robot_item"
+        "layer0": "kibtech:item/netherite_robot_item"
     }
 }

@@ -10,7 +10,7 @@ import com.joniski.kibtech.block.custom.SolarPanelEntity;
 import com.joniski.kibtech.entity.custom.DiamondRobotEntity;
 import com.joniski.kibtech.entity.custom.IronRobotEntity;
 import com.joniski.kibtech.entity.custom.RobotEntity;
-import com.joniski.kibtech.entity.custom.StoneRobotEntity;
+import com.joniski.kibtech.entity.custom.NetheriteRobotEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -27,14 +27,14 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class ModEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, KibTech.MODID);
 
-    public static final Supplier<EntityType<RobotEntity>> WOOD_ROBOT = 
-        ENTITIES.register("wood_robot_entity",  () -> EntityType.Builder.of(RobotEntity::new,
-             MobCategory.MISC).sized(.5f, .5f).build("wood_robot_entity"));
+    public static final Supplier<EntityType<RobotEntity>> COPPER_ROBOT = 
+        ENTITIES.register("copper_robot_entity",  () -> EntityType.Builder.of(RobotEntity::new,
+             MobCategory.MISC).sized(.5f, .5f).build("copper_robot_entity"));
 
 
-    public static final Supplier<EntityType<StoneRobotEntity>> STONE_ROBOT = 
-        ENTITIES.register("stone_robot_entity",  () -> EntityType.Builder.of(StoneRobotEntity::new,
-             MobCategory.MISC).sized(.5f, .5f).build("stone_robot_entity"));
+    public static final Supplier<EntityType<NetheriteRobotEntity>> NETHERITE_ROBOT = 
+        ENTITIES.register("netherite_robot_entity",  () -> EntityType.Builder.of(NetheriteRobotEntity::new,
+             MobCategory.MISC).sized(.5f, .5f).build("netherite_robot_entity"));
 
     public static final Supplier<EntityType<IronRobotEntity>> IRON_ROBOT = 
         ENTITIES.register("iron_robot_entity",  () -> EntityType.Builder.of(IronRobotEntity::new,

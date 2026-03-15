@@ -4,7 +4,9 @@ import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.entity.ModEntities;
 import com.joniski.kibtech.entity.custom.RobotEntity;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -57,8 +59,8 @@ public class ModNetworking {
     // MOVE TO ANOTHER CLASS 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event){
-        event.put(ModEntities.WOOD_ROBOT.get(), RobotEntity.createAttributes().build());
-        event.put(ModEntities.STONE_ROBOT.get(), RobotEntity.createAttributes().build());
+        event.put(ModEntities.COPPER_ROBOT.get(), RobotEntity.createAttributes().build());
+        event.put(ModEntities.NETHERITE_ROBOT.get(), RobotEntity.createAttributes().build());
         event.put(ModEntities.IRON_ROBOT.get(), RobotEntity.createAttributes().build());
         event.put(ModEntities.DIAMOND_ROBOT.get(), RobotEntity.createAttributes().build());
     }

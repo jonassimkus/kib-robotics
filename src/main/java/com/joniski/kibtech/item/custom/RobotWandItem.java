@@ -9,10 +9,17 @@ import com.joniski.kibtech.entity.custom.RobotEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
 public class RobotWandItem extends Item{
 
@@ -34,6 +41,16 @@ public class RobotWandItem extends Item{
                 return InteractionResult.FAIL;
             }
             context.getPlayer().getCooldowns().addCooldown(this, 20);
+
+
+            if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof ChestBlockEntity chest){
+                setRobot.station = context.getClickedPos();
+                context.getPlayer().sendSystemMessage((Component.literal("Robot chest set.")));
+                setRobot = null;
+                startPos = null;
+                endPos = null;
+                return InteractionResult.SUCCESS;
+            }
 
             if (startPos != null && endPos == null){
                 endPos = context.getClickedPos();

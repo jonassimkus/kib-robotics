@@ -5,8 +5,8 @@
 
   "item.kibtech.weak_battery": "Weak Battery",
   "item.kibtech.strong_battery": "Strong Battery",
-  "item.kibtech.wood_robot_item": "Wood Robot",
-  "item.kibtech.stone_robot_item": "Stone Robot",
+  "item.kibtech.copper_robot_item": "Copper Robot",
+  "item.kibtech.netherite_robot_item": "Netherite Robot",
   "item.kibtech.iron_robot_item": "Iron Robot",
   "item.kibtech.diamond_robot_item": "Diamond Robot",
   "item.kibtech.chip_item": "Microchip",

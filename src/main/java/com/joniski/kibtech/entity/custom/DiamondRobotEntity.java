@@ -11,10 +11,10 @@ public class DiamondRobotEntity extends RobotEntity{
     public DiamondRobotEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
         maxToolTier = Tiers.DIAMOND;
-        moveSpeed = 1.3f;
-        maxArea = 13;
+        moveSpeed = 1.1f;
+        maxArea = 11;
         dropItem = ModItems.DIAMOND_ROBOT_ITEM.asItem();
-        inventory.setSize(8);
+        inventory.setSize(20);
     }
 }
     

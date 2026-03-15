@@ -43,14 +43,15 @@ public class KibTech {
         .displayItems((params, output) ->{
             output.accept(ModItems.WEAK_BATTERY.get());
             output.accept(ModItems.STRONG_BATTERY.get());
-            output.accept(ModItems.WOOD_ROBOT_ITEM.get());
-            output.accept(ModItems.STONE_ROBOT_ITEM.get());
+            output.accept(ModItems.COPPER_ROBOT_ITEM.get());
+            output.accept(ModItems.NETHERITE_ROBOT_ITEM.get());
             output.accept(ModItems.IRON_ROBOT_ITEM.get());
             output.accept(ModItems.DIAMOND_ROBOT_ITEM.get());
             output.accept(ModItems.CHIP_ITEM.get());
             output.accept(ModItems.ROBOT_WAND_ITEM.get());
             output.accept(ModBlocks.SOLAR_PANEL.get());
             output.accept(ModBlocks.BATTERY_CHARGER.get());
+            output.accept(ModBlocks.ROBOT_STATION.get());
         })
         .build()
     ); 

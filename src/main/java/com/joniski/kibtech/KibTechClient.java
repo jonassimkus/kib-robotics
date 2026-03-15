@@ -5,10 +5,10 @@ import com.joniski.kibtech.entity.client.DiamondRobotModel;
 import com.joniski.kibtech.entity.client.DiamondRobotRenderer;
 import com.joniski.kibtech.entity.client.IronRobotModel;
 import com.joniski.kibtech.entity.client.IronRobotRenderer;
-import com.joniski.kibtech.entity.client.StoneRobotModel;
-import com.joniski.kibtech.entity.client.StoneRobotRenderer;
-import com.joniski.kibtech.entity.client.WoodRobotModel;
-import com.joniski.kibtech.entity.client.WoodRobotRenderer;
+import com.joniski.kibtech.entity.client.NetheriteRobotModel;
+import com.joniski.kibtech.entity.client.NetheriteRobotRenderer;
+import com.joniski.kibtech.entity.client.CopperRobotModel;
+import com.joniski.kibtech.entity.client.CopperRobotRenderer;
 import com.joniski.kibtech.entity.custom.DiamondRobotEntity;
 import com.joniski.kibtech.entity.custom.RobotEntity;
 import com.joniski.kibtech.menus.ModMenus;
@@ -47,8 +47,8 @@ public class KibTechClient {
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
-        EntityRenderers.register(ModEntities.WOOD_ROBOT.get(), WoodRobotRenderer::new);
-        EntityRenderers.register(ModEntities.STONE_ROBOT.get(), StoneRobotRenderer::new);
+        EntityRenderers.register(ModEntities.COPPER_ROBOT.get(), CopperRobotRenderer::new);
+        EntityRenderers.register(ModEntities.NETHERITE_ROBOT.get(), NetheriteRobotRenderer::new);
         EntityRenderers.register(ModEntities.IRON_ROBOT.get(), IronRobotRenderer::new);
         EntityRenderers.register(ModEntities.DIAMOND_ROBOT.get(), DiamondRobotRenderer::new);
     }
@@ -62,8 +62,8 @@ public class KibTechClient {
 
     @SubscribeEvent
     public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event){
-        event.registerLayerDefinition(WoodRobotModel.LAYER_LOCATION, WoodRobotModel::createBodyLayer);
-        event.registerLayerDefinition(StoneRobotModel.LAYER_LOCATION, StoneRobotModel::createBodyLayer);
+        event.registerLayerDefinition(CopperRobotModel.LAYER_LOCATION, CopperRobotModel::createBodyLayer);
+        event.registerLayerDefinition(NetheriteRobotModel.LAYER_LOCATION, NetheriteRobotModel::createBodyLayer);
         event.registerLayerDefinition(IronRobotModel.LAYER_LOCATION, IronRobotModel::createBodyLayer);
         event.registerLayerDefinition(DiamondRobotModel.LAYER_LOCATION, DiamondRobotModel::createBodyLayer);
     }

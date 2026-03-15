@@ -1,4 +1,4 @@
-package com.joniski.kibtech.uitl;
+package com.joniski.kibtech.util;
 
 import java.util.ArrayList;
 import java.util.List;

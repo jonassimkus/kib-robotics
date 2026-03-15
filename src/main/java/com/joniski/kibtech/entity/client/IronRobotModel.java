@@ -53,8 +53,8 @@ public class IronRobotModel<T extends RobotEntity> extends HierarchicalModel<T>{
 		this.applyHeadRotation(netHeadYaw, headPitch);
 		
 
-		this.animateWalk(WoodRobotAnimations.ANIM_WOOD_ROBOT_WALK, limbSwing, limbSwingAmount, 2, 1);
-		this.animate(entity.idleAnimationState, WoodRobotAnimations.ANIM_WOOD_ROBOT_IDLE, ageInTicks, 1f);
+		this.animateWalk(RobotAnimations.ANIM_WOOD_ROBOT_WALK, limbSwing, limbSwingAmount, 2, 1);
+		this.animate(entity.idleAnimationState, RobotAnimations.ANIM_WOOD_ROBOT_IDLE, ageInTicks, 1f);
 	}
 
 	private void applyHeadRotation(float headYaw, float headPitch){

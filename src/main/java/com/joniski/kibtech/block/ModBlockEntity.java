@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.custom.BatteryChargerEntity;
+import com.joniski.kibtech.block.custom.RobotStationEntity;
 import com.joniski.kibtech.block.custom.SolarPanelEntity;
 
 import net.minecraft.core.registries.Registries;
@@ -25,6 +26,11 @@ public class ModBlockEntity {
             SolarPanelEntity::new,
             ModBlocks.SOLAR_PANEL.get()).build(null));
     
+    public static final Supplier<BlockEntityType<RobotStationEntity>> ROBOT_STATION_BE =
+         BLOCK_ENTITIES.register("robot_station_be", () -> BlockEntityType.Builder.of(
+            RobotStationEntity::new,
+            ModBlocks.ROBOT_STATION.get()).build(null));
+
     public static void register(IEventBus eventBus){
         BLOCK_ENTITIES.register(eventBus);
     }

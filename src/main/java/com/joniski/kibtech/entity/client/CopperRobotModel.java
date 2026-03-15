@@ -17,12 +17,12 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public class WoodRobotModel<T extends RobotEntity> extends HierarchicalModel<T>{
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(KibTech.MODID, "wood_robot_entity"), "main");
+public class CopperRobotModel<T extends RobotEntity> extends HierarchicalModel<T>{
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(KibTech.MODID, "copper_robot_entity"), "main");
 	private final ModelPart Body;
 	private final ModelPart Head;
 
-	public WoodRobotModel(ModelPart root) {
+	public CopperRobotModel(ModelPart root) {
 		this.Body = root.getChild("Body");
 		this.Head = this.Body.getChild("Head");
 	}
@@ -53,8 +53,8 @@ public class WoodRobotModel<T extends RobotEntity> extends HierarchicalModel<T>{
 		this.applyHeadRotation(netHeadYaw, headPitch);
 		
 
-		this.animateWalk(WoodRobotAnimations.ANIM_WOOD_ROBOT_WALK, limbSwing, limbSwingAmount, 2, 1);
-		this.animate(entity.idleAnimationState, WoodRobotAnimations.ANIM_WOOD_ROBOT_IDLE, ageInTicks, 1f);
+		this.animateWalk(RobotAnimations.ANIM_WOOD_ROBOT_WALK, limbSwing, limbSwingAmount, 2, 1);
+		this.animate(entity.idleAnimationState, RobotAnimations.ANIM_WOOD_ROBOT_IDLE, ageInTicks, 1f);
 	}
 
 	private void applyHeadRotation(float headYaw, float headPitch){

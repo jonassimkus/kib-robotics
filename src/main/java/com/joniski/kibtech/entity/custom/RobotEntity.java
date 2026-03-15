@@ -17,7 +17,7 @@ import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.item.custom.RobotWandItem;
 import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.menus.custom.RobotMenu;
-import com.joniski.kibtech.uitl.TreeUtil;
+import com.joniski.kibtech.util.TreeUtil;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -70,6 +70,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoubleBlockCombiner.BlockType;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.pathfinder.Path;
@@ -97,14 +98,15 @@ public class RobotEntity extends Animal{
     private UUID followEntityUUID;
     public BlockPos searchStart = null;
     public BlockPos searchEnd;
+    public BlockPos station;
     private List<BlockPos> targetTree;
-    public Item dropItem = ModItems.WOOD_ROBOT_ITEM.asItem();
+    public Item dropItem = ModItems.COPPER_ROBOT_ITEM.asItem();
     public int maxArea = 5;
     private boolean moving = false;
     private RobotWorkType workType = RobotWorkType.NONE;
 
    // Slot 1: Battery; Slot 2: Tool
-    public final ItemStackHandler inventory = new ItemStackHandler(4){
+    public final ItemStackHandler inventory = new ItemStackHandler(6){
         @Override
         protected int getStackLimit(int slot, ItemStack stack) {
             if (slot <= 1){
@@ -307,6 +309,7 @@ public class RobotEntity extends Animal{
     }
 
     public void setFollowEntity(Entity e){
+        stopMoving();
         if (e == null){
             followEntityUUID = null;
             return;
@@ -350,6 +353,9 @@ public class RobotEntity extends Animal{
             return;
         }
 
+      //  goToSpecialBlocks();
+       // return;
+
         if (workType == RobotWorkType.FARMER){
             farm();
             return;
@@ -358,7 +364,7 @@ public class RobotEntity extends Animal{
         if (workType == RobotWorkType.LUMBERJACK){
             lumberjack();
             return;
-        }
+        } 
     }
 
     public void follow(){
@@ -375,6 +381,7 @@ public class RobotEntity extends Animal{
             moving = true;
         }
     }
+
 
     public void farm(){
         if (searchStart == null || searchEnd == null){
@@ -505,6 +512,24 @@ public class RobotEntity extends Animal{
             moving = false;
             return;
         }
+    }
+
+    public static List<BlockPos> findRobotStation(Level level, BlockPos start, BlockPos end){
+        List<BlockPos> stations = new ArrayList<BlockPos>();
+
+        for(int y = start.getY(); y < end.getY(); ++ y){
+            for(int x = start.getX(); x < end.getX(); ++ x){
+                for(int z = start.getZ(); z < end.getZ(); ++ z){
+                    BlockPos newPos = new BlockPos(x, y, z);
+
+                    if (level.getBlockEntity(newPos) instanceof ChestBlockEntity){
+                        stations.add(newPos);
+                    }
+                }
+            }
+        }
+
+        return stations;
     }
 
     public static List<BlockPos> findClosestTreeInArea(Level level, BlockPos start, BlockPos end, BlockPos current){

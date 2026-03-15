@@ -5,7 +5,7 @@ import net.minecraft.client.animation.AnimationDefinition;
 import net.minecraft.client.animation.Keyframe;
 import net.minecraft.client.animation.KeyframeAnimations;
 
-public class WoodRobotAnimations {
+public class RobotAnimations {
 	public static final AnimationDefinition ANIM_WOOD_ROBOT_IDLE = AnimationDefinition.Builder.withLength(2.0F)
 		
 		.build();

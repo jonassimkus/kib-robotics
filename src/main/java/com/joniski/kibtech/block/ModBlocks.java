@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.custom.BatteryCharger;
+import com.joniski.kibtech.block.custom.RobotStation;
 import com.joniski.kibtech.block.custom.SolarPanel;
 import com.joniski.kibtech.item.ModItems;
 
@@ -29,6 +30,14 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> BATTERY_CHARGER = registerBlock("battery_charger",
      () -> new BatteryCharger(BlockBehaviour.Properties.of()
+        .strength(2f)
+        .requiresCorrectToolForDrops()
+        .sound(SoundType.STONE)
+        .noOcclusion()
+    ));
+
+    public static final DeferredBlock<Block> ROBOT_STATION = registerBlock("robot_station",
+     () -> new RobotStation(BlockBehaviour.Properties.of()
         .strength(2f)
         .requiresCorrectToolForDrops()
         .sound(SoundType.STONE)

@@ -3,7 +3,7 @@ package com.joniski.kibtech.menus.custom;
 import com.ibm.icu.impl.locale.LocaleDistance.Data;
 import com.joniski.kibtech.block.ModBlocks;
 import com.joniski.kibtech.block.custom.SolarPanelEntity;
-import com.joniski.kibtech.entity.client.WoodRobotAnimations;
+import com.joniski.kibtech.entity.client.RobotAnimations;
 import com.joniski.kibtech.entity.custom.RobotEntity;
 import com.joniski.kibtech.menus.ModMenus;
 
@@ -39,11 +39,13 @@ public class RobotMenu extends AbstractContainerMenu{
         addPlayerInventory(inventory);
         addPlayerHotbar(inventory);
     
-        this.addSlot(new SlotItemHandler(entity.inventory, 0, 8, 63));
-        this.addSlot(new SlotItemHandler(entity.inventory, 1, 8, 42));
+        this.addSlot(new SlotItemHandler(entity.inventory, 0, 8, 20));
+        this.addSlot(new SlotItemHandler(entity.inventory, 1, 28, 20));
 
-        for (int i = 2; i < entity.inventory.getSlots(); ++i){
-            this.addSlot(new SlotItemHandler(entity.inventory, i, 28+ 20 * (i - 2), 42));
+        for (int i = 0; i < entity.inventory.getSlots() - 2; ++i){
+            int offset = i / 9;
+
+            this.addSlot(new SlotItemHandler(entity.inventory, i+2, 8 + (18 * (i - (offset * 9))), 20 + (offset * 18)));
         }
     }
 
@@ -66,10 +68,7 @@ public class RobotMenu extends AbstractContainerMenu{
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
         super.clicked(slotId, button, clickType, player);
-
     }
-
-
 
     @Override
     public boolean stillValid(Player arg0) {

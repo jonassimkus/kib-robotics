@@ -29,7 +29,7 @@ public class ModMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<BatteryChargerMenu>> BATTERY_CHARGER_MENU =
             registerMenuType("battery_charger_menu", BatteryChargerMenu::new);
 
-        public static final DeferredHolder<MenuType<?>, MenuType<RobotMenu>> ROBOT_MENU = 
+    public static final DeferredHolder<MenuType<?>, MenuType<RobotMenu>> ROBOT_MENU = 
     MENUS.register("robot_menu", () -> IMenuTypeExtension.create( (windowId, inv, data) -> {
         if (data == null){
             return new RobotMenu(windowId, inv, -1);
@@ -37,6 +37,7 @@ public class ModMenus {
 
         return new RobotMenu(windowId, inv, data.getInt(0));
     } ));
+
 
     private static <T extends AbstractContainerMenu>DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(String name, IContainerFactory<T> factory){
         return MENUS.register(name, () -> IMenuTypeExtension.create(factory));
