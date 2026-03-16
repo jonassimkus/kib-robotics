@@ -6,6 +6,7 @@ import com.joniski.kibtech.block.custom.RobotStationEntity;
 import com.joniski.kibtech.menus.ModMenus;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -59,6 +60,13 @@ public class RobotStationMenu extends AbstractContainerMenu{
 
     @Override
     public boolean stillValid(Player arg0) {
+        if (level.getBlockEntity(blockEntity.getBlockPos()) instanceof RobotStationEntity station){
+            if (station.getEnergyStorage().getEnergyStored() <= 0){
+                arg0.sendSystemMessage(Component.literal("Station has no power."));
+                return false;
+            }
+        }
+
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), arg0, ModBlocks.ROBOT_STATION.get());
     }
 

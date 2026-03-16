@@ -68,6 +68,11 @@ public class RobotStation extends BaseEntityBlock{
 
         if (!level.isClientSide){
             if (level.getBlockEntity(pos) instanceof RobotStationEntity robotStationEntity){
+                if (robotStationEntity.getEnergyStorage().getEnergyStored() <= 0){
+                    player.sendSystemMessage(Component.literal("Station has no power."));
+                    return ItemInteractionResult.FAIL;
+                }
+
                 ((ServerPlayer) player).openMenu(new SimpleMenuProvider(robotStationEntity, Component.literal("Robot Station")), pos);
                 return ItemInteractionResult.SUCCESS;
             }

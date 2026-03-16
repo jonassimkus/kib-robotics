@@ -106,6 +106,7 @@ public class RobotEntity extends Animal{
     private List<BlockPos> targetTree;
     public Item dropItem = ModItems.COPPER_ROBOT_ITEM.asItem();
     public boolean goStation = false;
+    public boolean charging = false;
     public int maxArea = 5;
     private boolean moving = false;
     private RobotWorkType workType = RobotWorkType.NONE;
@@ -214,15 +215,24 @@ public class RobotEntity extends Animal{
             tag.putIntArray("searchStart", start);
             tag.putIntArray("searchEnd", end);
         }
+
+        if (getStation() != null){
+            List<Integer> stationPos = new ArrayList<Integer>();
+            stationPos.add(station.getX());
+            stationPos.add(station.getY());
+            stationPos.add(station.getZ());
+            tag.putIntArray("station", stationPos);
+        }
     }
 
     public BlockPos getStation(){
         if (station == null){
+            station = null;
             return null;
         }
 
         if (!(level().getBlockState(station).getBlock() instanceof RobotStation)){
-            return null;
+            station = null;
         }
 
         return station;
@@ -260,6 +270,13 @@ public class RobotEntity extends Animal{
             int[] end = tag.getIntArray("searchEnd");
             if (end.length >= 3){
                 searchEnd = new BlockPos(end[0], end[1], end[2]);
+            }
+        }
+
+        if (tag.get("station") != null){
+            int[] pos = tag.getIntArray("station");
+            if (pos.length >= 3){
+                setStation(new BlockPos(pos[0], pos[1], pos[2]));
             }
         }
     }
@@ -360,16 +377,23 @@ public class RobotEntity extends Animal{
     public void work(){
         ItemStack battStack = inventory.getStackInSlot(0);
         if (!(battStack.getItem() instanceof BatteryItem battery)){
+            stopMoving();
+            charging = false;
             return;
         }
 
         PowerRecord power = battStack.get(ModDataComponents.POWER_COMPONENT);
         if (power == null){
+            stopMoving();
+            charging = false;
             return;
         }
 
         if (power.power() > 1){
             battStack.set(ModDataComponents.POWER_COMPONENT, new PowerRecord(power.power()-1));
+        }else{
+            charging = false;
+            stopMoving();
         }
 
         Entity followEntity = getFollowEntity();
@@ -379,18 +403,77 @@ public class RobotEntity extends Animal{
             return;
         }
 
-        if (getStation() != null && !goStation){
-            int amountFull = 0;
-            for (int i = 0; i < inventory.getSlots(); ++i){
-                if (inventory.getStackInSlot(i).getCount() > 0){
-                    amountFull += 1;
-                }
-            }
-
-            if (amountFull == inventory.getSlots()){
+        if (getStation() != null && power.power() < (battery.getMaxPower() / 10) && !charging && (level().getBlockEntity(getStation()) instanceof RobotStationEntity e)){
+            if (e.getEnergyStorage().getEnergyStored() >= 100){
+                stopMoving();
+                charging = true;
                 goToStation();
+            }
+        }
+
+        if (charging && distanceToSqr(getStation().getCenter()) < 2){
+            if (!(level().getBlockEntity(getStation()) instanceof RobotStationEntity e)){
                 return;
             }
+
+            if (e.getEnergyStorage().getEnergyStored() < 100){
+                charging = false;
+                return;
+            }
+
+            int amountThere = e.getEnergyStorage().extractEnergy(35, true);
+
+            if (amountThere == 0){
+                charging = false;
+                return;
+            }
+
+            int amountTook = battery.charge(battStack, amountThere);
+            e.getEnergyStorage().extractEnergy(amountTook, false);
+
+            if (battery.isFull(battStack)){
+                charging = false;
+            }
+            return;
+        }
+
+        if (charging && distanceToSqr(getStation().getCenter()) >= 2 && !moving){
+            goToStation();
+            return;
+        }
+
+        int amountFull = 0;
+        for (int i = 0; i < inventory.getSlots(); ++i){
+            if (inventory.getStackInSlot(i).getCount() > 0){
+                amountFull += 1;
+            }
+        }
+
+        if (getStation() != null && !goStation){
+            int stationAmount = 0;
+            if (level().getBlockEntity(getStation()) instanceof RobotStationEntity stationEntity){
+                for (int i = 0; i < stationEntity.inventory.getSlots(); ++ i){
+                    if (stationEntity.inventory.getStackInSlot(i).getCount() > 0){
+                        stationAmount += 1;
+                    }
+                }
+
+                if (amountFull == inventory.getSlots() && stationAmount < stationEntity.inventory.getSlots()){
+                    stopMoving();
+                    goToStation();
+                    return;
+                }
+
+                if (amountFull == inventory.getSlots() && stationAmount == stationEntity.inventory.getSlots()){
+                    stopMoving();
+                    return;
+                }
+            }
+        }
+        
+        if (getStation() == null && amountFull == inventory.getSlots()){
+            stopMoving();
+            return;
         }
 
         if (goStation){
@@ -447,6 +530,7 @@ public class RobotEntity extends Animal{
 
         if (getNavigation().isDone()){
             stopMoving();
+
             RobotStationEntity robotStationEntity = (RobotStationEntity)level().getBlockEntity(getStation());
             for (int i = 2; i < inventory.getSlots(); ++i){
                 for (int v = 0; v < robotStationEntity.inventory.getSlots(); ++ v){
@@ -597,24 +681,6 @@ public class RobotEntity extends Animal{
             moving = false;
             return;
         }
-    }
-
-    public static List<BlockPos> findRobotStation(Level level, BlockPos start, BlockPos end){
-        List<BlockPos> stations = new ArrayList<BlockPos>();
-
-        for(int y = start.getY(); y < end.getY(); ++ y){
-            for(int x = start.getX(); x < end.getX(); ++ x){
-                for(int z = start.getZ(); z < end.getZ(); ++ z){
-                    BlockPos newPos = new BlockPos(x, y, z);
-
-                    if (level.getBlockEntity(newPos) instanceof ChestBlockEntity){
-                        stations.add(newPos);
-                    }
-                }
-            }
-        }
-
-        return stations;
     }
 
     public static List<BlockPos> findClosestTreeInArea(Level level, BlockPos start, BlockPos end, BlockPos current){
