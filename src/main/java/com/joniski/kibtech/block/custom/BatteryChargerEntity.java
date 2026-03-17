@@ -102,6 +102,10 @@ public class BatteryChargerEntity extends BlockEntity implements MenuProvider{
 
 
     public static IEnergyStorage getCapabilities(BatteryChargerEntity batteryChargerEntity, Direction direction){
+        if (direction == batteryChargerEntity.getBlockState().getValue(BatteryCharger.FACING)){
+            return null;
+        }
+
         return batteryChargerEntity.energyStorage;
     }
 

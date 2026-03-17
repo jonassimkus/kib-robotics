@@ -34,7 +34,7 @@ public class SolarPanel extends BaseEntityBlock{
 
     public static final MapCodec<SolarPanel> CODEC = simpleCodec(SolarPanel::new);
 
-    public static final VoxelShape shape = box(3,0,3,13,9,13);
+    public static final VoxelShape shape = box(0,0,0,16,8,16);
 
     public SolarPanel(Properties properties) {
         super(properties);

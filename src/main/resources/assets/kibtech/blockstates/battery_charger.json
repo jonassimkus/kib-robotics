@@ -1,7 +1,20 @@
 {
     "variants": {
-        "": {
-            "model": "kibtech:block/battery_charger"
+        "facing=north": {
+            "model": "kibtech:block/battery_charger",
+            "y": 0
+        },
+        "facing=south": {
+            "model": "kibtech:block/battery_charger",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "kibtech:block/battery_charger",
+            "y": 270
+        },
+        "facing=east": {
+            "model": "kibtech:block/battery_charger",
+            "y": 90
         }
     }
 }
