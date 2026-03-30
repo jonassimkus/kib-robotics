@@ -28,6 +28,7 @@ Download
 =======
 
 [Modrinth](https://modrinth.com/mod/kibs-robots/)
+[Curseforge](https://legacy.curseforge.com/minecraft/mc-mods/kibs-robots)
 
 Dependencies
 =======
